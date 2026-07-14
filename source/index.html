@@ -64,7 +64,7 @@
   .pill.published{background:var(--gray-soft);color:var(--gray)}
 
   .p-media{height:320px;display:grid;place-items:center;position:relative;overflow:hidden}
-  .p-media>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+  .p-media>img,.p-media>video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
   .p-media svg{width:44px;height:44px;stroke:#fff;fill:none;stroke-width:1.5;opacity:.92;position:relative}
   .p-media .tag{position:absolute;bottom:10px;left:10px;background:rgba(13,27,46,.6);color:#fff;font-size:10.5px;font-weight:800;letter-spacing:.06em;padding:3px 8px;border-radius:6px;text-transform:uppercase}
 
@@ -129,7 +129,7 @@
   .m-head .pill{margin-left:auto}
   .m-close{background:none;border:0;color:var(--ink-3);font-size:22px;line-height:1;padding:2px 6px}
   .m-media{height:240px;display:grid;place-items:center;position:relative;overflow:hidden}
-  .m-media>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+  .m-media>img,.m-media>video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
   .m-media svg{width:38px;height:38px;stroke:#fff;fill:none;stroke-width:1.5;opacity:.92;position:relative}
   .m-media .tag{position:absolute;bottom:10px;left:10px;background:rgba(13,27,46,.6);color:#fff;font-size:10.5px;font-weight:800;letter-spacing:.06em;padding:3px 8px;border-radius:6px;text-transform:uppercase}
   .m-replace{position:absolute;top:10px;right:10px;background:rgba(13,27,46,.65);color:#fff;border:0;border-radius:8px;padding:7px 12px;font-weight:700;font-size:12.5px;display:flex;align-items:center;gap:6px}
@@ -242,10 +242,10 @@
   <div class="band-in">
     <div>
       <h1 id="band-title">Post review</h1>
-      <span class="sub" id="band-sub">3 posts waiting for you · LinkedIn</span>
+      <span class="sub" id="band-sub">Loading… · LinkedIn</span>
     </div>
     <div class="seg" id="founder-tabs">
-      <button id="tab-feed" class="on" onclick="setTab('feed')">Posts<span class="badge" id="badge-feed">3</span></button>
+      <button id="tab-feed" class="on" onclick="setTab('feed')">Posts<span class="badge" id="badge-feed" style="display:none">0</span></button>
       <button id="tab-cal" onclick="setTab('cal')">Calendar</button>
       <button id="tab-stats" onclick="setTab('stats')">Stats</button>
     </div>
@@ -305,73 +305,46 @@ const FOUNDERS = {
   nikola:{name:'Nikola', role:'Co-founder & CTO, MotionOps', img:'data:image/jpeg;base64,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'},
 };
 
-/* hist:true = published history, shown in Stats (and calendar if in July), hidden from the feed.
-   img = data URL of an uploaded visual (otherwise gradient g1..g6 placeholder). */
-let posts = [
-  {id:1, f:'trevor', type:'Video', g:'g1', date:'2026-07-16', time:'09:30', status:'review', note:'',
-   cap:"Most field service companies lose 10+ hours a week to manual scheduling. We built MotionOps because we lived that pain.\n\nHere's a 60-second look at how dispatch works when software does the boring part. ↓"},
-  {id:2, f:'trevor', type:'Carousel', g:'g2', date:'2026-07-18', time:'11:00', status:'review', note:'',
-   cap:"5 things I wish I knew before starting a field service business:\n\n1. Your calendar is your P&L\n2. Techs quit managers, not jobs\n3. The best marketing is a truck that shows up on time"},
-  {id:3, f:'trevor', type:'Video', g:'g4', date:'2026-07-21', time:'10:00', status:'review', note:'',
-   cap:"We just shipped route optimization. Our beta customers are saving 90 minutes per tech, per day.\n\nDemo below, sound on. 🔊"},
-  {id:4, f:'trevor', type:'Image', g:'g5', date:'2026-07-23', time:'09:00', status:'scheduled', note:'',
-   cap:"Milestone: 100 companies now run their daily operations on MotionOps. Thank you to every early customer who trusted two guys with a prototype."},
-  {id:5, f:'trevor', type:'Video', g:'g3', date:'2026-07-09', time:'09:30', status:'published', note:'',
-   cap:"Why we rebuilt our mobile app from scratch, and what it cost us.",
-   m:{imp:9840, reach:7120, likes:214, comments:38, shares:19}},
-  {id:10, f:'trevor', type:'Image', g:'g6', date:'2026-07-02', time:'10:00', status:'published', hist:true,
-   cap:"The whiteboard where MotionOps started, 3 years ago today.",
-   m:{imp:12400, reach:9350, likes:342, comments:61, shares:27}},
-  {id:11, f:'trevor', type:'Carousel', g:'g2', date:'2026-06-25', time:'09:30', status:'published', hist:true,
-   cap:"6 slides: how we price a product tradespeople actually pay for.",
-   m:{imp:7620, reach:5480, likes:158, comments:24, shares:12}},
-  {id:12, f:'trevor', type:'Video', g:'g4', date:'2026-06-18', time:'11:00', status:'published', hist:true,
-   cap:"A day riding along with one of our customers' crews in Austin.",
-   m:{imp:15200, reach:11900, likes:428, comments:83, shares:41}},
+/* ---- backend (nexion-social Worker + ContentStudio) ---- */
+const API_BASE = 'https://nexion-social.nexion.workers.dev';
+const NEXION_KEY = (typeof window!=='undefined' && localStorage.getItem('nexion_key')) || ''; // baked at deploy time
+async function api(path, opts={}){
+  const r = await fetch(API_BASE + path, {
+    ...opts,
+    headers: { 'X-Nexion-Key': NEXION_KEY, ...(opts.body ? {'Content-Type':'application/json'} : {}), ...(opts.headers||{}) },
+  });
+  const t = await r.text();
+  let b; try { b = JSON.parse(t); } catch { b = { raw:t }; }
+  if(!r.ok || b.error) throw new Error(b.error || ('HTTP '+r.status));
+  return b;
+}
+// upload a File to R2 via the Worker, returns {key, url, kind}
+async function uploadFile(file){
+  const ext = (file.name.split('.').pop()||'').toLowerCase();
+  const r = await fetch(`${API_BASE}/upload?ext=${encodeURIComponent(ext)}`, {
+    method:'PUT', headers:{'X-Nexion-Key':NEXION_KEY}, body:file,
+  });
+  const b = await r.json();
+  if(!r.ok || b.error) throw new Error(b.error||'upload failed');
+  return b; // {key, url, kind}
+}
 
-  {id:6, f:'nikola', type:'Video', g:'g3', date:'2026-07-17', time:'12:00', status:'review', note:'',
-   cap:"Everyone talks about AI agents. Here's what actually happens when you let one schedule 400 real service jobs for a week. Results below 🧵"},
-  {id:7, f:'nikola', type:'Image', g:'g6', date:'2026-07-20', time:'09:00', status:'review', note:'',
-   cap:"Our stack: Cloudflare Workers, D1, and a lot of opinions. Here's the architecture that serves 100 field-service companies for under $200/month."},
-  {id:8, f:'nikola', type:'Carousel', g:'g2', date:'2026-07-24', time:'10:30', status:'rejected',
-   note:'Slide 4 has the old benchmark numbers, new ones are in Slack.',
-   cap:"How we cut our dispatch algorithm's runtime from 40s to 800ms, a debugging story in 6 slides."},
-  {id:9, f:'nikola', type:'Video', g:'g1', date:'2026-07-07', time:'11:00', status:'published', note:'',
-   cap:"Live-coding our customer-facing ETA feature. Unedited, bugs included.",
-   m:{imp:5230, reach:3910, likes:147, comments:29, shares:9}},
-  {id:13, f:'nikola', type:'Image', g:'g5', date:'2026-06-30', time:'09:00', status:'published', hist:true,
-   cap:"Our error budget dashboard. Green for 214 days straight.",
-   m:{imp:4480, reach:3260, likes:98, comments:14, shares:6}},
-  {id:14, f:'nikola', type:'Carousel', g:'g2', date:'2026-06-22', time:'10:00', status:'published', hist:true,
-   cap:"Postmortem: the deploy that took us down for 11 minutes.",
-   m:{imp:8910, reach:6740, likes:263, comments:57, shares:31}},
-];
-let nextId = 100;
+let posts = [];      // adapted from the API
+let statsData = null;
 
-const STATS = {
-  trevor:{followers:'12,480', fdelta:'+312 this month',
-          weeks:[{l:'Jun W3',v:2},{l:'Jun W4',v:3},{l:'Jul W1',v:2},{l:'Jul W2',v:3},{l:'Jul W3',v:2}]},
-  nikola:{followers:'6,930', fdelta:'+189 this month',
-          weeks:[{l:'Jun W3',v:1},{l:'Jun W4',v:2},{l:'Jul W1',v:2},{l:'Jul W2',v:1},{l:'Jul W3',v:2}]},
-};
-
-/* daily impressions for the perf chart, 30 days ending Jul 14, deterministic mock */
-function dailySeries(f){
-  const base = f==='trevor'? 950 : 480;
-  const mine = posts.filter(p=>p.f===f && p.status==='published' && p.m);
-  const out = [];
-  const localIso = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-  for(let i=0;i<30;i++){
-    const d = new Date(2026,5,15+i);
-    const iso = localIso(d);
-    let v = base + Math.round(Math.abs(Math.sin(i*1.7)+Math.sin(i*0.6))*base*0.45);
-    const posted = mine.find(p=>p.date===iso);
-    if(posted) v += Math.round(posted.m.imp*0.38);
-    const dayAfter = mine.find(p=>{const n=new Date(p.date+'T00:00');n.setDate(n.getDate()+1);return localIso(n)===iso;});
-    if(dayAfter) v += Math.round(dayAfter.m.imp*0.2);
-    out.push({iso, label:d.toLocaleDateString('en-US',{month:'short',day:'numeric'}), v, posted:!!posted});
-  }
-  return out;
+// map an API post to the shape the render code expects (adds f/cap/img/g aliases)
+function adapt(p){
+  const key = (p.mediaKeys && p.mediaKeys[0]) || null;
+  const gi = Math.abs([...String(p.id)].reduce((a,c)=>a+c.charCodeAt(0),0)) % GRADS.length;
+  return { ...p, f:p.founder, cap:p.caption||'', img: key ? `${API_BASE}/v/${key}` : null,
+           vid: (p.mediaKind==='video'), g: GRADS[gi] };
+}
+async function loadState(){
+  try {
+    const d = await api('/fr/posts');
+    posts = (d.posts||[]).map(adapt);
+  } catch(e){ posts = []; toast('Load failed: '+e.message); }
+  render();
 }
 
 const STATUS = {
@@ -389,7 +362,6 @@ const ICONS = {
 const GRADS = ['g1','g2','g3','g4','g5','g6'];
 
 let founder = 'trevor', tab = 'feed', modalId = null;
-let chartRange = 7;
 let npImg = null, composeOpen = false;
 
 const fmtDate = d => new Date(d+'T00:00').toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
@@ -398,7 +370,8 @@ const engRate = m => ((m.likes+m.comments+m.shares)/m.imp*100);
 const esc = s => s.replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
 function mediaHtml(p){
-  return (p.img? `<img src="${p.img}" alt="">` : '') + ICONS[p.type] + `<span class="tag">${p.type}</span>`;
+  const inner = p.img ? (p.vid ? `<video src="${p.img}" muted playsinline preload="metadata"></video>` : `<img src="${p.img}" alt="">`) : '';
+  return inner + ICONS[p.type] + `<span class="tag">${p.type}</span>`;
 }
 
 function toast(msg){
@@ -407,9 +380,8 @@ function toast(msg){
   clearTimeout(t._h); t._h = setTimeout(()=>t.classList.remove('show'),2400);
 }
 
-function setFounder(f){ founder = f; composeOpen = false; npImg = null; closeModal(); render(); window.scrollTo({top:0}); }
+function setFounder(f){ founder = f; composeOpen = false; npImg = null; npMediaKey = null; npMediaKind = null; closeModal(); render(); window.scrollTo({top:0}); }
 function setTab(t){ tab = t; render(); }
-function setRange(r){ chartRange = r; renderStats(); }
 
 function render(){
   document.getElementById('fs-trevor').classList.toggle('on', founder==='trevor');
@@ -419,14 +391,14 @@ function render(){
     document.getElementById('view-'+t).hidden = tab!==t;
   }
 
-  const mine = posts.filter(p=>p.f===founder && !p.hist);
+  const mine = posts.filter(p=>p.f===founder);
   const toReview = mine.filter(p=>p.status==='review').length;
   const badge = document.getElementById('badge-feed');
   badge.textContent = toReview; badge.style.display = toReview? '':'none';
   document.getElementById('band-sub').textContent =
     (toReview? `${toReview} post${toReview>1?'s':''} waiting for you` : 'All caught up') + ' · LinkedIn';
 
-  renderFeed(mine); renderCal(); renderStats();
+  renderFeed(mine); renderCal(); if(tab==='stats') renderStats();
 }
 
 /* ---------- inline compose ---------- */
@@ -458,32 +430,38 @@ function composeHtml(){
     </div>
   </div>`;
 }
-let npDraft = '';
+let npDraft = '', npMediaKey = null, npMediaKind = null;
 function openCompose(){ composeOpen = true; render(); requestAnimationFrame(()=>document.getElementById('np-cap')?.focus()); }
-function cancelCompose(){ composeOpen = false; npImg = null; npDraft = ''; render(); }
+function cancelCompose(){ composeOpen = false; npImg = null; npMediaKey = null; npMediaKind = null; npDraft = ''; render(); }
 function keepDraft(){ const el = document.getElementById('np-cap'); if(el) npDraft = el.value; }
 function npFile(inp){
   const file = inp.files[0]; if(!file) return;
   keepDraft();
-  const r = new FileReader();
-  r.onload = ()=>{ npImg = r.result; render(); };
-  r.readAsDataURL(file);
+  const up = document.getElementById('np-up');
+  const r = new FileReader(); r.onload = ()=>{ npImg = r.result; }; r.readAsDataURL(file);
+  if(up) up.innerHTML = '<span>Uploading…</span>';
+  uploadFile(file).then(res=>{
+    npMediaKey = res.key; npMediaKind = res.kind; render();
+  }).catch(e=>{ toast('Upload failed: '+e.message); npImg=null; render(); });
   inp.value = '';
 }
-function createPost(){
+async function createPost(){
+  keepDraft();
   const cap = document.getElementById('np-cap').value.trim();
   if(!cap){ document.getElementById('np-cap').focus(); toast('Write the post text first'); return; }
-  posts.push({
-    id: nextId++, f: founder,
-    type: document.getElementById('np-type').value,
-    g: GRADS[nextId % GRADS.length],
-    img: npImg,
-    date: document.getElementById('np-date').value || '2026-07-27',
-    time: document.getElementById('np-time').value || '09:30',
-    status:'review', note:'', cap,
-  });
-  composeOpen = false; npImg = null; npDraft = '';
-  render(); toast(`Added to ${FOUNDERS[founder].name}'s posts`);
+  try {
+    await api('/fr/posts', { method:'POST', body: JSON.stringify({
+      founder,
+      type: document.getElementById('np-type').value,
+      caption: cap,
+      mediaKeys: npMediaKey ? [npMediaKey] : [],
+      mediaKind: npMediaKind,
+      date: document.getElementById('np-date').value || '2026-07-27',
+      time: document.getElementById('np-time').value || '09:30',
+    })});
+    composeOpen = false; npImg = null; npMediaKey = null; npMediaKind = null; npDraft = '';
+    await loadState(); toast(`Added to ${FOUNDERS[founder].name}'s posts`);
+  } catch(e){ toast('Could not add: '+e.message); }
 }
 
 /* ---------- founder feed ---------- */
@@ -502,42 +480,52 @@ function renderFeed(mine){
       <div class="p-media ${p.img?'':p.g}">${mediaHtml(p)}</div>
       <div class="p-cap">
         <textarea aria-label="Post text" ${p.status==='published'?'disabled':''}
-          onchange="editCap(${p.id},this.value)">${esc(p.cap)}</textarea>
+          onchange="editCap('${p.id}',this.value)">${esc(p.cap)}</textarea>
       </div>
       <div class="p-when">
         Goes out:
-        <input type="date" value="${p.date}" ${p.status==='published'?'disabled':''} onchange="editWhen(${p.id},this.value,null)">
-        <input type="time" value="${p.time}" ${p.status==='published'?'disabled':''} onchange="editWhen(${p.id},null,this.value)">
+        <input type="date" value="${p.date}" ${p.status==='published'?'disabled':''} onchange="editWhen('${p.id}',this.value,null)">
+        <input type="time" value="${p.time}" ${p.status==='published'?'disabled':''} onchange="editWhen('${p.id}',null,this.value)">
       </div>
       ${p.note? `<div class="p-note"><b>Your note to Braca</b>${esc(p.note)}</div>`:''}
       ${p.status!=='published'? `
       <div class="p-actions">
-        <button class="btn schedule" onclick="schedulePost(${p.id})" ${p.status==='scheduled'?'disabled':''}>
+        <button class="btn schedule" onclick="schedulePost('${p.id}')" ${p.status==='scheduled'?'disabled':''}>
           ${p.status==='scheduled'?'Scheduled ✓':'Schedule'}</button>
-        <button class="btn reject" onclick="toggleReason(${p.id})">Not approved</button>
+        <button class="btn reject" onclick="toggleReason('${p.id}')">Not approved</button>
       </div>
       <div class="p-reason" id="reason-${p.id}">
         <label>What's wrong with it? Braca will fix it.</label>
         <textarea id="reason-txt-${p.id}" placeholder="e.g. This doesn't sound like me, make it more casual...">${esc(p.note)}</textarea>
         <div class="row">
-          <button class="btn sm" onclick="toggleReason(${p.id},true)">Cancel</button>
-          <button class="btn sm senddark" onclick="sendReason(${p.id})">Send</button>
+          <button class="btn sm" onclick="toggleReason('${p.id}',true)">Cancel</button>
+          <button class="btn sm senddark" onclick="sendReason('${p.id}')">Send</button>
         </div>
       </div>`:''}
     </article>`;
   }).join('') + (list.length? `<p class="feed-done">That's ${list.length} post${list.length>1?'s':''} for ${f.name}.</p>` : `<p class="feed-done">No posts yet. Hit + to create the first one.</p>`);
 }
 
-function editCap(id,v){ const p=posts.find(x=>x.id===id); if(p){ p.cap=v; toast('Text saved'); } }
-function editWhen(id,d,t){
+async function editCap(id,v){
+  const p=posts.find(x=>x.id===id); if(!p) return;
+  p.cap=v; p.caption=v;
+  try { await api('/fr/posts/'+id, { method:'PATCH', body: JSON.stringify({caption:v}) }); toast('Text saved'); }
+  catch(e){ toast('Save failed: '+e.message); }
+}
+async function editWhen(id,d,t){
   const p=posts.find(x=>x.id===id); if(!p) return;
   if(d) p.date=d; if(t) p.time=t;
-  toast(`Moved to ${fmtDate(p.date)} · ${p.time}`); render();
+  try { await api('/fr/posts/'+id, { method:'PATCH', body: JSON.stringify(d?{date:d}:{time:t}) });
+    toast(`Moved to ${fmtDate(p.date)} · ${p.time}`); render(); }
+  catch(e){ toast('Save failed: '+e.message); }
 }
-function schedulePost(id){
+async function schedulePost(id){
   const p=posts.find(x=>x.id===id); if(!p) return;
-  p.status='scheduled'; p.note='';
-  render(); toast(`Scheduled for ${fmtDate(p.date)} · ${p.time} ✓`);
+  toast('Scheduling…');
+  try {
+    await api('/fr/posts/'+id+'/schedule', { method:'POST', body: JSON.stringify({date:p.date, time:p.time, caption:p.cap}) });
+    await loadState(); toast(`Scheduled for ${fmtDate(p.date)} · ${p.time} ✓`);
+  } catch(e){ toast('Schedule failed: '+e.message); }
 }
 function toggleReason(id,close){
   const el=document.getElementById('reason-'+id);
@@ -545,12 +533,13 @@ function toggleReason(id,close){
   el.classList.toggle('open');
   if(el.classList.contains('open')) document.getElementById('reason-txt-'+id).focus();
 }
-function sendReason(id){
+async function sendReason(id){
   const p=posts.find(x=>x.id===id); if(!p) return;
   const txt=document.getElementById('reason-txt-'+id).value.trim();
   if(!txt){ document.getElementById('reason-txt-'+id).focus(); return; }
-  p.status='rejected'; p.note=txt;
-  render(); toast('Sent to Braca. He will fix it and it comes back here.');
+  try { await api('/fr/posts/'+id+'/reject', { method:'POST', body: JSON.stringify({note:txt}) });
+    await loadState(); toast('Sent to Braca. He will fix it and it comes back here.'); }
+  catch(e){ toast('Failed: '+e.message); }
 }
 
 /* ---------- calendar (July 2026: 31 days, Jul 1 = Wed, pad 2, Mon-first) ---------- */
@@ -564,8 +553,8 @@ function renderCal(){
     const iso=`2026-07-${String(d).padStart(2,'0')}`;
     const dots = mine.filter(p=>p.date===iso).map(p=>{
       const drag = p.status!=='published';
-      return `<button class="dot ${STATUS[p.status].cls}" title="${p.time} · ${esc(p.cap.split('\n')[0])}"
-        draggable="${drag}" ondragstart="dragStart(event,${p.id})" onclick="openModal(${p.id})"></button>`;
+      return `<button class="dot ${STATUS[p.status].cls}" title="${p.time} · ${esc((p.cap||'').split('\n')[0])}"
+        draggable="${drag}" ondragstart="dragStart(event,'${p.id}')" onclick="openModal('${p.id}')"></button>`;
     }).join('');
     html+=`<div class="day${d===today?' today':''}" data-iso="${iso}"
       ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="drop(event)">
@@ -577,11 +566,15 @@ function renderCal(){
 function dragStart(e,id){ e.dataTransfer.setData('text/plain',id); e.dataTransfer.effectAllowed='move'; }
 function dragOver(e){ e.preventDefault(); e.currentTarget.classList.add('dragover'); }
 function dragLeave(e){ e.currentTarget.classList.remove('dragover'); }
-function drop(e){
+async function drop(e){
   e.preventDefault(); e.currentTarget.classList.remove('dragover');
-  const id=+e.dataTransfer.getData('text/plain');
+  const id=e.dataTransfer.getData('text/plain');
   const p=posts.find(x=>x.id===id); const iso=e.currentTarget.dataset.iso;
-  if(p&&iso&&p.date!==iso&&p.status!=='published'){ p.date=iso; render(); toast(`Moved to ${fmtDate(iso)} · ${p.time}`); }
+  if(p&&iso&&p.date!==iso&&p.status!=='published'){
+    p.date=iso; render();
+    try { await api('/fr/posts/'+id, { method:'PATCH', body: JSON.stringify({date:iso}) }); toast(`Moved to ${fmtDate(iso)} · ${p.time}`); }
+    catch(err){ toast('Move failed: '+err.message); loadState(); }
+  }
 }
 
 /* ---------- modal ---------- */
@@ -608,13 +601,16 @@ function openModal(id){
   document.getElementById('scrim').classList.add('open');
 }
 function closeModal(){ modalId=null; document.getElementById('scrim').classList.remove('open'); }
-function saveModal(){
+async function saveModal(){
   const p=posts.find(x=>x.id===modalId); if(!p) return;
-  p.cap = document.getElementById('m-caption').value;
-  p.date = document.getElementById('m-date').value || p.date;
-  p.time = document.getElementById('m-time').value || p.time;
-  render(); closeModal();
-  toast(`Saved. Goes out ${fmtDate(p.date)} · ${p.time}`);
+  const caption = document.getElementById('m-caption').value;
+  const date = document.getElementById('m-date').value || p.date;
+  const time = document.getElementById('m-time').value || p.time;
+  try {
+    await api('/fr/posts/'+p.id, { method:'PATCH', body: JSON.stringify({caption, date, time}) });
+    closeModal(); await loadState();
+    toast(`Saved. Goes out ${fmtDate(date)} · ${time}`);
+  } catch(e){ toast('Save failed: '+e.message); }
 }
 function rejectFromModal(){
   const p=posts.find(x=>x.id===modalId); if(!p) return;
@@ -625,123 +621,63 @@ function rejectFromModal(){
     toggleReason(p.id);
   });
 }
-function modalFile(inp){
+async function modalFile(inp){
   const p=posts.find(x=>x.id===modalId); const file=inp.files[0];
   if(!p||!file) return;
-  const r=new FileReader();
-  r.onload=()=>{ p.img=r.result; openModal(p.id); render(); toast('New visual attached'); };
-  r.readAsDataURL(file);
   inp.value='';
+  toast('Uploading…');
+  try {
+    const up = await uploadFile(file);
+    await api('/fr/posts/'+p.id, { method:'PATCH', body: JSON.stringify({mediaKeys:[up.key], mediaKind:up.kind}) });
+    await loadState();
+    const np = posts.find(x=>x.id===p.id); if(np) openModal(np.id);
+    toast('New visual attached');
+  } catch(e){ toast('Upload failed: '+e.message); }
 }
 document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeModal(); });
 
-/* ---------- stats ---------- */
-function renderStats(){
-  const s=STATS[founder]; const f=FOUNDERS[founder];
-  const pub = posts.filter(p=>p.f===founder && p.status==='published' && p.m);
-  const tImp = pub.reduce((a,p)=>a+p.m.imp,0);
-  const tReach = pub.reduce((a,p)=>a+p.m.reach,0);
-  const tLikes = pub.reduce((a,p)=>a+p.m.likes,0);
-  const tCom = pub.reduce((a,p)=>a+p.m.comments,0);
-  const tSh = pub.reduce((a,p)=>a+p.m.shares,0);
-  const avgEng = pub.length? (pub.reduce((a,p)=>a+engRate(p.m),0)/pub.length) : 0;
-  const best = pub.length? pub.reduce((a,p)=> engRate(p.m)>engRate(a.m)?p:a) : null;
-
-  const fmts = ['Video','Image','Carousel'].map(t=>{
-    const g = pub.filter(p=>p.type===t);
-    return {t, n:g.length, eng: g.length? g.reduce((a,p)=>a+engRate(p.m),0)/g.length : 0};
-  }).filter(x=>x.n);
-  const maxFmt = Math.max(...fmts.map(x=>x.eng), 0.01);
-
-  const series = dailySeries(founder).slice(-chartRange);
-  const maxV = Math.max(...series.map(d=>d.v));
-  const W=560, H=150, PX=6;
-  const step = (W-PX*2)/(series.length-1);
-  const pts = series.map((d,i)=>[PX+i*step, H-8-(d.v/maxV)*(H-24)]);
-  const line = pts.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ');
-  const area = line + ` L${pts[pts.length-1][0].toFixed(1)} ${H} L${pts[0][0].toFixed(1)} ${H} Z`;
-  const marks = series.map((d,i)=> d.posted?
-    `<circle cx="${pts[i][0].toFixed(1)}" cy="${pts[i][1].toFixed(1)}" r="4.5" fill="#41AE75" stroke="#fff" stroke-width="2"><title>${d.label}: ${fmtN(d.v)} impressions · post published</title></circle>` : '').join('');
-  const xLabels = chartRange===7? series.map(d=>d.label) : [series[0].label, series[9].label, series[19].label, series[29].label];
-
-  const sorted=[...pub].sort((a,b)=> b.date.localeCompare(a.date));
-  document.getElementById('view-stats').innerHTML=`
-    <div class="stat-row">
-      <div class="stat"><div class="k">${s.followers}</div><div class="l">Followers</div><div class="d up">${s.fdelta}</div></div>
-      <div class="stat"><div class="k">${fmtN(tImp)}</div><div class="l">Impressions · all posts</div><div class="d up">${fmtN(tReach)} reach</div></div>
-      <div class="stat"><div class="k">${avgEng.toFixed(1)}%</div><div class="l">Avg engagement rate</div><div class="d up">↑ vs last month</div></div>
-    </div>
-    <div class="stat-row">
-      <div class="stat"><div class="k">${fmtN(tLikes)}</div><div class="l">Reactions</div></div>
-      <div class="stat"><div class="k">${tCom}</div><div class="l">Comments</div></div>
-      <div class="stat"><div class="k">${tSh}</div><div class="l">Shares</div></div>
-    </div>
-
-    <div class="card">
-      <div class="card-head">
-        <div><h3>Performance over time</h3><div class="sub">Daily impressions · green dots = post published</div></div>
-        <div class="mini-seg">
-          <button class="${chartRange===7?'on':''}" onclick="setRange(7)">Week</button>
-          <button class="${chartRange===30?'on':''}" onclick="setRange(30)">Month</button>
-        </div>
+/* ---------- stats (real data from the Worker; engagement grows as posts publish) ---------- */
+async function renderStats(){
+  const el = document.getElementById('view-stats');
+  const f = FOUNDERS[founder];
+  try {
+    const s = await api('/fr/stats?founder='+founder);
+    const pub = (s.posts||[]).filter(x=>x.status==='published').sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+    const hasMetrics = pub.some(x=>x.metrics);
+    el.innerHTML = `
+      <div class="stat-row">
+        <div class="stat"><div class="k">${s.published||0}</div><div class="l">Published</div></div>
+        <div class="stat"><div class="k">${s.scheduled||0}</div><div class="l">Scheduled ahead</div></div>
+        <div class="stat"><div class="k">${s.review||0}</div><div class="l">Waiting for review</div></div>
       </div>
-      <div>
-        <svg class="chart-svg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-label="Daily impressions chart">
-          <defs><linearGradient id="fillg" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stop-color="#41AE75" stop-opacity=".28"/>
-            <stop offset="1" stop-color="#41AE75" stop-opacity="0"/>
-          </linearGradient></defs>
-          ${[0.25,0.5,0.75].map(r=>`<line x1="0" y1="${(H-8)*r}" x2="${W}" y2="${(H-8)*r}" stroke="#e9eef4" stroke-width="1"/>`).join('')}
-          <path d="${area}" fill="url(#fillg)"/>
-          <path d="${line}" fill="none" stroke="#41AE75" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
-          ${marks}
-        </svg>
-        <div class="chart-x">${xLabels.map(l=>`<span>${l}</span>`).join('')}</div>
-      </div>
-    </div>
 
-    <div class="card">
-      <div class="card-head"><div><h3>Published posts</h3><div class="sub">★ = best performer by engagement rate</div></div></div>
-      <div class="ptable-wrap">
-        <table class="ptable">
-          <thead><tr><th>Post</th><th>Impressions</th><th>Reach</th><th>Reactions</th><th>Comments</th><th>Shares</th><th>Eng. rate</th></tr></thead>
-          <tbody>
-            ${sorted.map(p=>`
-            <tr class="${best && p.id===best.id?'best':''}">
-              <td><span class="pt">${esc(p.cap.split('\n')[0].slice(0,60))}${p.cap.split('\n')[0].length>60?'...':''}</span>
-                  <span class="pd">${p.type} · ${fmtDate(p.date)}</span></td>
-              <td>${fmtN(p.m.imp)}</td><td>${fmtN(p.m.reach)}</td>
-              <td>${p.m.likes}</td><td>${p.m.comments}</td><td>${p.m.shares}</td>
-              <td class="eng">${engRate(p.m).toFixed(1)}%</td>
-            </tr>`).join('')}
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-head"><div><h3>What works for ${f.name}</h3><div class="sub">Avg engagement rate by format</div></div></div>
-      ${fmts.sort((a,b)=>b.eng-a.eng).map(x=>`
-        <div class="fmt-row">
-          <span class="fl">${x.t} <span style="color:var(--ink-3)">·${x.n}</span></span>
-          <span class="fmt-bar"><i style="width:${Math.round(x.eng/maxFmt*100)}%"></i></span>
-          <span class="fv">${x.eng.toFixed(1)}%</span>
-        </div>`).join('')}
-    </div>
-
-    <div class="card">
-      <div class="card-head"><div><h3>Posting cadence</h3><div class="sub">Posts per week</div></div></div>
-      <div style="display:flex;align-items:flex-end;gap:10px;height:110px">
-        ${s.weeks.map((w,i)=>{
-          const mx=Math.max(...s.weeks.map(x=>x.v));
-          return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;justify-content:flex-end">
-            <div style="width:100%;max-width:44px;border-radius:6px 6px 2px 2px;background:${i===s.weeks.length-1?'var(--green)':'var(--green-soft)'};height:${Math.round(w.v/mx*82)}%;position:relative">
-              <b style="position:absolute;top:-20px;left:0;right:0;text-align:center;font-size:11.5px;color:var(--ink-2)">${w.v}</b></div>
-            <span style="font-size:11px;color:var(--ink-3);font-weight:700">${w.l}</span></div>`;
-        }).join('')}
-      </div>
-    </div>`;
+      <div class="card">
+        <div class="card-head"><div><h3>${f.name} — published on LinkedIn</h3>
+          <div class="sub">${pub.length? pub.length+' published so far' : 'Nothing published yet — numbers appear here as posts go live'}</div></div></div>
+        ${pub.length ? `
+        <div class="ptable-wrap">
+          <table class="ptable">
+            <thead><tr><th>Post</th><th>Impressions</th><th>Reactions</th><th>Comments</th><th>Eng. rate</th></tr></thead>
+            <tbody>
+              ${pub.map(p=>{
+                const m = p.metrics;
+                const cell = v => m && v!=null ? fmtN(v) : '—';
+                return `<tr>
+                  <td><span class="pt">${esc((p.caption||'').split('\n')[0].slice(0,60))}${(p.caption||'').split('\n')[0].length>60?'...':''}</span>
+                      <span class="pd">${p.type} · ${p.date? fmtDate(p.date):''}</span></td>
+                  <td>${cell(m&&m.impressions)}</td><td>${cell(m&&m.reactions)}</td>
+                  <td>${cell(m&&m.comments)}</td><td class="eng">${m&&m.engRate!=null? m.engRate.toFixed(1)+'%':'—'}</td>
+                </tr>`;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>` : `<p class="feed-done" style="padding:8px 0">Schedule and publish a post to start measuring.</p>`}
+        ${!hasMetrics ? `<div class="p-note" style="margin:12px 0 0"><b>Engagement metrics</b>Impressions, reactions and comments fill in once we wire LinkedIn analytics (separate from publishing). Publishing itself is live.</div>` : ''}
+      </div>`;
+  } catch(e){
+    el.innerHTML = `<div class="card"><div class="sub">Stats unavailable: ${esc(e.message)}</div></div>`;
+  }
 }
 
-render();
+loadState();
 </script>
