@@ -521,6 +521,7 @@ async function editWhen(id,d,t){
 }
 async function schedulePost(id){
   const p=posts.find(x=>x.id===id); if(!p) return;
+  if(!confirm(`Schedule this post to go out ${fmtDate(p.date)} at ${p.time}?\n\nMade a mistake? No stress — you can still edit or delete it from the Calendar until it publishes.`)) return;
   toast('Scheduling…');
   try {
     await api('/fr/posts/'+id+'/schedule', { method:'POST', body: JSON.stringify({date:p.date, time:p.time, caption:p.cap}) });
