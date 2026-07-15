@@ -447,7 +447,7 @@ function liWhenLabel(p){
 function liMediaBlock(p, replace){
   const rep = replace ? `<button class="li-replace" onclick="document.getElementById('m-file').click()"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>Replace</button>` : '';
   if(p.img) return `<div class="li-media">${rep}${p.vid ? `<video src="${p.img}" muted playsinline preload="metadata"></video>` : `<img src="${p.img}" alt="">`}</div>`;
-  if(replace) return `<div class="li-media"><div class="ph"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="2"/><path d="M3 17l6-5 5 4 3-2 4 3"/></svg><span>No visual — click Replace to add</span></div>${rep}</div>`;
+  if(replace) return `<div class="li-media"><div class="ph"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="2"/><path d="M3 17l6-5 5 4 3-2 4 3"/></svg><span>No visual yet. Click Replace to add one.</span></div>${rep}</div>`;
   return '';
 }
 // p: {f, cap, img, vid, status, date, time}; opts: {edit, capId, capOnChange, replace}
@@ -659,7 +659,7 @@ async function schedulePost(id){
   const p=posts.find(x=>x.id===id); if(!p) return;
   const ok = await confirmDialog({
     title:'Schedule this post?',
-    msg:`It goes out ${fmtDate(p.date)} at ${p.time}. Made a mistake? No stress — you can still edit or delete it from the Calendar until it publishes.`,
+    msg:`It goes out ${fmtDate(p.date)} at ${p.time}. Made a mistake? No stress, you can still edit or delete it from the Calendar until it publishes.`,
     ok:'Schedule' });
   if(!ok) return;
   toast('Scheduling…');
@@ -795,8 +795,8 @@ async function renderStats(){
       </div>
 
       <div class="card">
-        <div class="card-head"><div><h3>${f.name} — published on LinkedIn</h3>
-          <div class="sub">${pub.length? pub.length+' published so far' : 'Nothing published yet — numbers appear here as posts go live'}</div></div></div>
+        <div class="card-head"><div><h3>${f.name} on LinkedIn</h3>
+          <div class="sub">${pub.length? pub.length+' published so far' : 'Nothing published yet. Numbers appear here as posts go live.'}</div></div></div>
         ${pub.length ? `
         <div class="ptable-wrap">
           <table class="ptable">
@@ -804,12 +804,12 @@ async function renderStats(){
             <tbody>
               ${pub.map(p=>{
                 const m = p.metrics;
-                const cell = v => m && v!=null ? fmtN(v) : '—';
+                const cell = v => m && v!=null ? fmtN(v) : '·';
                 return `<tr>
                   <td><span class="pt">${esc((p.caption||'').split('\n')[0].slice(0,60))}${(p.caption||'').split('\n')[0].length>60?'...':''}</span>
                       <span class="pd">${p.type} · ${p.date? fmtDate(p.date):''}</span></td>
                   <td>${cell(m&&m.impressions)}</td><td>${cell(m&&m.reactions)}</td>
-                  <td>${cell(m&&m.comments)}</td><td class="eng">${m&&m.engRate!=null? m.engRate.toFixed(1)+'%':'—'}</td>
+                  <td>${cell(m&&m.comments)}</td><td class="eng">${m&&m.engRate!=null? m.engRate.toFixed(1)+'%':'·'}</td>
                 </tr>`;
               }).join('')}
             </tbody>
