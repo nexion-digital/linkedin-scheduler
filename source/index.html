@@ -429,7 +429,7 @@ let statsData = null;
 function adapt(p){
   const key = (p.mediaKeys && p.mediaKeys[0]) || null;
   const gi = Math.abs([...String(p.id)].reduce((a,c)=>a+c.charCodeAt(0),0)) % GRADS.length;
-  return { ...p, f:p.founder, cap:p.caption||'', img: key ? `${API_BASE}/v/${key}` : null,
+  return { ...p, f:p.founder, cap:p.caption||'', img: key ? `${API_BASE}/v/${key}` : (p.mediaUrl||null),
            vid: (p.mediaKind==='video'), g: GRADS[gi] };
 }
 async function loadState(){
