@@ -11,6 +11,7 @@
     --ink:#16233a; --ink-2:#5b6b82; --ink-3:#8d9ab0;
     --line:#dfe6ee; --line-2:#e9eef4;
     --orange:#e8862e; --orange-soft:#fdf0e2;
+    --blue:#3667d6; --blue-dark:#2b53b0; --blue-soft:#e7edfc;
     --red:#d64545; --red-soft:#fbe9e9;
     --gray:#5b6b82; --gray-soft:#eaeef3;
     --shadow:0 1px 2px rgba(13,27,46,.06),0 8px 28px rgba(13,27,46,.09);
@@ -53,16 +54,22 @@
   /* ---------- feed ---------- */
   .feed{display:flex;flex-direction:column;gap:18px}
   .post{display:flex;flex-direction:column;gap:10px}
-  .post.st-published{opacity:.85}
+  /* status treatment D: tinted wash behind the whole post */
+  .post.st-approved,.post.st-scheduled,.post.st-rejected,.post.st-published{border-radius:16px;padding:12px}
+  .post.st-approved{background:var(--blue-soft)}
+  .post.st-scheduled{background:var(--green-soft)}
+  .post.st-rejected{background:var(--red-soft)}
+  .post.st-published{background:var(--gray-soft);opacity:.9}
   .p-top{display:flex;align-items:center;gap:11px;padding:14px 16px 10px}
   .p-top .avatar{width:42px;height:42px}
   .p-top .who b{display:block;font-size:15px;font-weight:800}
   .p-top .who span{font-size:12.5px;color:var(--ink-3)}
   .pill{margin-left:auto;font-size:11.5px;font-weight:800;border-radius:6px;padding:4px 10px;white-space:nowrap;letter-spacing:.02em}
   .pill.review{background:var(--orange-soft);color:var(--orange)}
-  .pill.scheduled{background:var(--green-soft);color:var(--green-dark)}
-  .pill.rejected{background:var(--red-soft);color:var(--red)}
-  .pill.published{background:var(--gray-soft);color:var(--gray)}
+  .pill.approved{background:var(--blue);color:#fff}
+  .pill.scheduled{background:var(--green);color:#fff}
+  .pill.rejected{background:var(--red);color:#fff}
+  .pill.published{background:var(--gray);color:#fff}
 
   .p-media{height:320px;display:grid;place-items:center;position:relative;overflow:hidden}
   .p-media>img,.p-media>video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
@@ -80,9 +87,16 @@
   .btn{flex:1;border-radius:10px;padding:11px;font-weight:800;font-size:14.5px;border:1px solid var(--line);background:var(--panel);color:var(--ink)}
   .btn.schedule{background:var(--green);border-color:var(--green);color:#fff}
   .btn.schedule:hover{background:var(--green-dark)}
+  .btn.approve{background:var(--blue-soft);border-color:transparent;color:var(--blue)}
+  .btn.approve:hover{background:color-mix(in srgb,var(--blue) 18%,var(--panel))}
+  .btn.approve.on{background:var(--blue);border-color:var(--blue);color:#fff}
   .btn.reject{color:var(--red);border-color:color-mix(in srgb,var(--red) 45%,transparent)}
   .btn.reject:hover{background:var(--red-soft)}
   .btn:disabled{opacity:.55;cursor:default}
+  /* delete-note ✕ on the rejection comment */
+  .p-note{position:relative}
+  .note-x{position:absolute;top:8px;right:8px;width:22px;height:22px;border:0;border-radius:6px;background:rgba(214,69,69,.12);color:var(--red);font-size:14px;line-height:1;cursor:pointer;display:grid;place-items:center}
+  .note-x:hover{background:rgba(214,69,69,.22)}
 
   .p-reason{padding:0;display:none}
   .p-reason.open{display:block}
@@ -115,6 +129,7 @@
   .dot{width:11px;height:11px;border-radius:99px;border:0;padding:0;cursor:grab}
   .dot:active{cursor:grabbing}
   .dot.review{background:var(--orange)}
+  .dot.approved{background:var(--blue)}
   .dot.scheduled{background:var(--green)}
   .dot.rejected{background:var(--red)}
   .dot.published{background:var(--ink-3);opacity:.55}
@@ -322,6 +337,7 @@
       <div class="cal-grid" id="cal-grid"></div>
       <div class="legend">
         <span><i style="background:var(--orange)"></i>To review</span>
+        <span><i style="background:var(--blue)"></i>Approved</span>
         <span><i style="background:var(--green)"></i>Scheduled</span>
         <span><i style="background:var(--red)"></i>Not approved</span>
         <span><i style="background:var(--ink-3);opacity:.55"></i>Published</span>
@@ -411,6 +427,7 @@ async function loadState(){
 
 const STATUS = {
   review:{label:'Waiting for review', cls:'review'},
+  approved:{label:'Approved ✓', cls:'approved'},
   scheduled:{label:'Scheduled ✓', cls:'scheduled'},
   rejected:{label:'Not approved', cls:'rejected'},
   published:{label:'Published', cls:'published'},
@@ -519,12 +536,18 @@ async function deletePost(id){
   try { await api('/fr/posts/'+id, { method:'DELETE' }); closeModal(); await loadState(); toast('Post deleted'); }
   catch(e){ toast('Delete failed: '+e.message); }
 }
+function syncModalToPost(p){
+  const cap=document.getElementById('m-caption'); if(cap) p.cap=cap.value;
+  const d=document.getElementById('m-date'); if(d&&d.value) p.date=d.value;
+  const t=document.getElementById('m-time'); if(t&&t.value) p.time=t.value;
+}
 function scheduleFromModal(){
   const p=posts.find(x=>x.id===modalId); if(!p) return;
-  p.cap = document.getElementById('m-caption').value;
-  p.date = document.getElementById('m-date').value || p.date;
-  p.time = document.getElementById('m-time').value || p.time;
-  schedulePost(p.id);
+  syncModalToPost(p); schedulePost(p.id);
+}
+function approveFromModal(){
+  const p=posts.find(x=>x.id===modalId); if(!p) return;
+  syncModalToPost(p); closeModal(); approvePost(p.id);
 }
 
 function toast(msg){
@@ -619,13 +642,14 @@ async function createPost(){
 
 /* ---------- founder feed ---------- */
 function renderFeed(mine){
-  const order = {review:0,rejected:1,scheduled:2,published:3};
-  const list = [...mine].sort((a,b)=> order[a.status]-order[b.status] || a.date.localeCompare(b.date));
+  const order = {review:0,rejected:1,approved:2,scheduled:3,published:4};
+  const list = [...mine].sort((a,b)=> order[a.status]-order[b.status] || (a.date||'').localeCompare(b.date||''));
   const f = FOUNDERS[founder];
   const trash = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m1 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/></svg>';
   document.getElementById('view-feed').innerHTML = composeHtml() + list.map(p=>{
     const s = STATUS[p.status];
     const done = p.status==='published';
+    const scheduled = p.status==='scheduled';
     return `<article class="post st-${p.status}" id="post-${p.id}">
       <div class="rev-bar">
         <span class="pill ${s.cls}">${p.status==='review'?'Waiting for you':s.label}</span>
@@ -634,10 +658,11 @@ function renderFeed(mine){
           <input type="time" value="${p.time||''}" onchange="editWhen('${p.id}',null,this.value)"></span>`}
       </div>
       ${liPreview(p, {edit:!done, capOnChange:`editCap('${p.id}',this.value)`})}
-      ${p.note? `<div class="p-note"><b>Your note to Braca</b>${esc(p.note)}</div>`:''}
+      ${p.note? `<div class="p-note"><button class="note-x" title="Delete note" aria-label="Delete note" onclick="deleteNote('${p.id}')">✕</button><b>Your note to Braca</b>${esc(p.note)}</div>`:''}
       ${done? '' : `
       <div class="p-actions">
-        <button class="btn schedule" onclick="schedulePost('${p.id}')" ${p.status==='scheduled'?'disabled':''}>${p.status==='scheduled'?'Scheduled ✓':'Schedule'}</button>
+        <button class="btn schedule" onclick="schedulePost('${p.id}')" ${scheduled?'disabled':''}>${scheduled?'Scheduled ✓':'Schedule'}</button>
+        ${scheduled?'':`<button class="btn approve ${p.status==='approved'?'on':''}" onclick="approvePost('${p.id}')">${p.status==='approved'?'Approved ✓':'Approve'}</button>`}
         <button class="btn reject" onclick="toggleReason('${p.id}')">Not approved</button>
         <button class="btn delete" onclick="deletePost('${p.id}')" title="Delete post" aria-label="Delete post">${trash}</button>
       </div>
@@ -651,7 +676,20 @@ function renderFeed(mine){
       </div>`}
     </article>`;
   }).join('') + (list.length? `<p class="feed-done">That's ${list.length} post${list.length>1?'s':''} for ${f.name}.</p>` : `<p class="feed-done">No posts yet. Hit + to create the first one.</p>`);
-  document.querySelectorAll('#view-feed textarea.li-text').forEach(autoGrow);
+  requestAnimationFrame(()=>document.querySelectorAll('#view-feed textarea.li-text').forEach(autoGrow));
+}
+async function approvePost(id){
+  const p=posts.find(x=>x.id===id); if(!p) return;
+  if(p.status==='approved') return;
+  try { await api('/fr/posts/'+id+'/approve', { method:'POST', body: JSON.stringify({caption:p.cap, date:p.date, time:p.time}) });
+    await loadState(); toast('Approved — ready to schedule'); }
+  catch(e){ toast('Failed: '+e.message); }
+}
+async function deleteNote(id){
+  const p=posts.find(x=>x.id===id); if(!p) return;
+  p.note='';
+  try { await api('/fr/posts/'+id, { method:'PATCH', body: JSON.stringify({note:''}) }); render(); toast('Note removed'); }
+  catch(e){ toast('Failed: '+e.message); }
 }
 
 async function editCap(id,v){
@@ -738,21 +776,22 @@ function openModal(id){
   const done = p.status==='published';
   document.getElementById('m-pill').className = 'pill '+s.cls;
   document.getElementById('m-pill').textContent = s.label;
-  const canSchedule = p.status==='review' || p.status==='rejected';
+  const scheduled = p.status==='scheduled';
   const trash = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m1 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/></svg>';
   document.getElementById('m-body').innerHTML = `
     ${done? '' : `<div class="rev-bar" style="padding:0 0 2px"><span class="rev-when" style="margin-left:0">Goes out
       <input type="date" id="m-date" value="${p.date||''}">
       <input type="time" id="m-time" value="${p.time||''}"></span></div>`}
     ${liPreview(p, {edit:!done, capId:'m-caption', replace:!done})}
-    ${p.note? `<div class="p-note" style="margin:0"><b>Your note to Braca</b>${esc(p.note)}</div>`:''}
+    ${p.note? `<div class="p-note" style="margin:0;position:relative"><button class="note-x" onclick="deleteNote('${p.id}')" title="Delete note">✕</button><b>Your note to Braca</b>${esc(p.note)}</div>`:''}
     ${done? '' : `<div class="m-actions">
-      <button class="btn schedule" onclick="saveModal()">Save changes</button>
-      ${canSchedule? `<button class="btn" onclick="scheduleFromModal()">Schedule</button>`:''}
+      <button class="btn schedule" onclick="scheduleFromModal()" ${scheduled?'disabled':''}>${scheduled?'Scheduled ✓':'Schedule'}</button>
+      ${scheduled?'':`<button class="btn approve ${p.status==='approved'?'on':''}" onclick="approveFromModal()">${p.status==='approved'?'Approved ✓':'Approve'}</button>`}
       <button class="btn reject" onclick="rejectFromModal()">Not approved</button>
       <button class="btn delete" onclick="deletePost('${p.id}')" title="Delete post">${trash}</button>
-    </div>`}`;
-  document.querySelectorAll('#m-body textarea.li-text').forEach(autoGrow);
+    </div>
+    <button class="btn" style="flex:none;align-self:flex-start;background:none;border:0;color:var(--ink-2);padding:4px 2px;font-size:12.5px" onclick="saveModal()">Save text/time changes</button>`}`;
+  requestAnimationFrame(()=>document.querySelectorAll('#m-body textarea.li-text').forEach(autoGrow));
   document.getElementById('scrim').classList.add('open');
 }
 function closeModal(){ modalId=null; document.getElementById('scrim').classList.remove('open'); }
