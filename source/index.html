@@ -185,6 +185,18 @@
   .li-play{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:60px;height:60px;border-radius:50%;background:rgba(13,27,46,.62);border:0;display:grid;place-items:center;cursor:pointer;z-index:3;transition:background .15s,transform .1s}
   .li-play:hover{background:rgba(13,27,46,.82);transform:translate(-50%,-50%) scale(1.05)}
   .li-play svg{width:26px;height:26px;fill:#fff;margin-left:3px}
+  /* media controls (appear on hover over the image/video) */
+  .media-ctl{position:absolute;top:10px;right:10px;display:flex;gap:8px;z-index:4;opacity:0;transform:translateY(-4px);transition:opacity .15s,transform .15s;pointer-events:none}
+  .li-media:hover .media-ctl,.li-media:focus-within .media-ctl{opacity:1;transform:none;pointer-events:auto}
+  .mc{display:flex;align-items:center;gap:6px;border:0;border-radius:9px;padding:8px 12px;font-family:inherit;font-weight:700;font-size:12.5px;cursor:pointer;backdrop-filter:blur(6px)}
+  .mc svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+  .mc.dl{background:rgba(13,27,46,.72);color:#fff}
+  .mc.dl:hover{background:rgba(13,27,46,.9)}
+  .mc.rm{background:rgba(255,255,255,.92);color:var(--red)}
+  .mc.rm:hover{background:#fff}
+  .li-add{width:100%;border:1.5px dashed var(--line);border-radius:10px;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:26px;color:var(--ink-3);font-weight:700;font-size:13px;cursor:pointer;font-family:inherit}
+  .li-add:hover{border-color:var(--green);color:var(--green-dark)}
+  .li-add svg{width:28px;height:28px;stroke:currentColor;fill:none;stroke-width:1.5}
   .li-media .ph{height:220px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:#8a97a6;font-family:'Inter',sans-serif;font-size:12.5px;font-weight:600;width:100%}
   .li-media .ph svg{width:34px;height:34px;stroke:#b6c0cc;fill:none;stroke-width:1.5}
   /* LinkedIn bottom action bar (compact, matches real mobile layout) */
@@ -363,7 +375,7 @@
     <div class="m-body" id="m-body"></div>
   </div>
 </div>
-<input type="file" id="m-file" accept="image/*,video/*" hidden onchange="modalFile(this)">
+<input type="file" id="post-file" accept="image/*,video/*" hidden onchange="postFileChosen(this)">
 
 <!-- native confirm dialog -->
 <div class="cf-scrim" id="cf-scrim" onclick="if(event.target===this)cfResolve(false)">
@@ -427,6 +439,14 @@ async function loadState(){
   } catch(e){ posts = []; toast('Load failed: '+e.message); }
   render();
 }
+// apply the authoritative post returned by a mutation (avoids KV read-after-write lag)
+function applyPost(np){
+  if(!np) return;
+  const i = posts.findIndex(x=>x.id===np.id);
+  if(i>=0) posts[i] = adapt(np); else posts.push(adapt(np));
+  render(); if(modalId===np.id) openModal(np.id);
+}
+function removePost(id){ posts = posts.filter(x=>x.id!==id); render(); }
 
 const STATUS = {
   review:{label:'Waiting for review', cls:'review'},
@@ -473,15 +493,18 @@ function liWhenLabel(p){
   if(p.status==='scheduled') return `Scheduled · ${fmtDate(p.date)} · ${p.time}`;
   return `Preview · goes out ${fmtDate(p.date)} · ${p.time}`;
 }
-function liMediaBlock(p, replace){
-  const rep = replace ? `<button class="li-replace" onclick="document.getElementById('m-file').click()"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>Replace</button>` : '';
+function liMediaBlock(p, editable){
   if(p.img) {
     const media = p.vid
       ? `<video src="${p.img}" playsinline preload="metadata"></video><button type="button" class="li-play" onclick="playVideo(this)" aria-label="Play video"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></button>`
       : `<img src="${p.img}" alt="">`;
-    return `<div class="li-media">${rep}${media}</div>`;
+    const ctl = editable ? `<div class="media-ctl">
+        <button type="button" class="mc dl" onclick="downloadMedia('${p.img}')"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>Download</button>
+        <button type="button" class="mc rm" onclick="removeMedia('${p.id}')"><svg viewBox="0 0 24 24"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m1 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/></svg>Remove</button>
+      </div>` : '';
+    return `<div class="li-media">${media}${ctl}</div>`;
   }
-  if(replace) return `<div class="li-media"><div class="ph"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="2"/><path d="M3 17l6-5 5 4 3-2 4 3"/></svg><span>No visual yet. Click Replace to add one.</span></div>${rep}</div>`;
+  if(editable) return `<button type="button" class="li-add" onclick="addMedia('${p.id}')"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="2"/><path d="M3 17l6-5 5 4 3-2 4 3"/></svg><span>Add a visual</span></button>`;
   return '';
 }
 function playVideo(btn){
@@ -490,6 +513,32 @@ function playVideo(btn){
   v.controls = true; v.muted = false;
   const pr = v.play(); if(pr && pr.catch) pr.catch(()=>{});
   btn.remove();
+}
+// ---- media controls (download / remove / add) ----
+let mediaTargetId = null;
+async function downloadMedia(url){
+  try {
+    const r = await fetch(url); const b = await r.blob();
+    const a = document.createElement('a'); a.href = URL.createObjectURL(b);
+    a.download = (url.split('/').pop() || 'motionops-media').split('?')[0];
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(a.href), 2000);
+  } catch(e){ window.open(url, '_blank'); }
+}
+async function removeMedia(id){
+  try { const r = await api('/fr/posts/'+id, { method:'PATCH', body: JSON.stringify({mediaKeys:[], mediaKind:null}) });
+    applyPost(r.post); toast('Visual removed'); }
+  catch(e){ toast('Failed: '+e.message); }
+}
+function addMedia(id){ mediaTargetId = id; document.getElementById('post-file').click(); }
+async function postFileChosen(inp){
+  const file = inp.files[0]; inp.value=''; const id = mediaTargetId; mediaTargetId = null;
+  if(!file || !id) return;
+  toast('Uploading…');
+  try { const up = await uploadFile(file);
+    const r = await api('/fr/posts/'+id, { method:'PATCH', body: JSON.stringify({mediaKeys:[up.key], mediaKind:up.kind}) });
+    applyPost(r.post); toast('Visual added'); }
+  catch(e){ toast('Upload failed: '+e.message); }
 }
 // p: {f, cap, img, vid, status, date, time}; opts: {edit, capId, capOnChange, replace}
 function liPreview(p, opts){
@@ -509,7 +558,7 @@ function liPreview(p, opts){
       <div class="li-more">···</div>
     </div>
     ${cap}
-    ${liMediaBlock(p, opts.replace)}
+    ${liMediaBlock(p, opts.edit)}
     <div class="li-foot">
       <span class="li-me"><img src="${f.img}" alt=""><svg class="chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></span>
       <span class="li-foot-acts">
@@ -548,7 +597,7 @@ async function deletePost(id){
     msg: p.status==='scheduled' ? 'It will be pulled from the schedule and won’t be published.' : 'This removes it from the review queue.',
     ok:'Delete', danger:true });
   if(!ok) return;
-  try { await api('/fr/posts/'+id, { method:'DELETE' }); closeModal(); await loadState(); toast('Post deleted'); }
+  try { await api('/fr/posts/'+id, { method:'DELETE' }); closeModal(); removePost(id); toast('Post deleted'); }
   catch(e){ toast('Delete failed: '+e.message); }
 }
 function syncModalToPost(p){
@@ -697,8 +746,8 @@ function renderFeed(mine){
 async function approvePost(id){
   const p=posts.find(x=>x.id===id); if(!p) return;
   if(p.status==='approved') return;
-  try { await api('/fr/posts/'+id+'/approve', { method:'POST', body: JSON.stringify({caption:p.cap, date:p.date, time:p.time}) });
-    await loadState(); toast('Approved — ready to schedule'); }
+  try { const r = await api('/fr/posts/'+id+'/approve', { method:'POST', body: JSON.stringify({caption:p.cap, date:p.date, time:p.time}) });
+    applyPost(r.post); toast('Approved, ready to schedule'); }
   catch(e){ toast('Failed: '+e.message); }
 }
 async function deleteNote(id){
@@ -730,8 +779,8 @@ async function schedulePost(id){
   if(!ok) return;
   toast('Scheduling…');
   try {
-    await api('/fr/posts/'+id+'/schedule', { method:'POST', body: JSON.stringify({date:p.date, time:p.time, caption:p.cap}) });
-    closeModal(); await loadState(); toast(`Scheduled for ${fmtDate(p.date)} · ${p.time} ✓`);
+    const r = await api('/fr/posts/'+id+'/schedule', { method:'POST', body: JSON.stringify({date:p.date, time:p.time, caption:p.cap}) });
+    closeModal(); applyPost(r.post); toast(`Scheduled for ${fmtDate(p.date)} · ${p.time} ✓`);
   } catch(e){ toast('Schedule failed: '+e.message); }
 }
 function toggleReason(id,close){
@@ -744,8 +793,8 @@ async function sendReason(id){
   const p=posts.find(x=>x.id===id); if(!p) return;
   const txt=document.getElementById('reason-txt-'+id).value.trim();
   if(!txt){ document.getElementById('reason-txt-'+id).focus(); return; }
-  try { await api('/fr/posts/'+id+'/reject', { method:'POST', body: JSON.stringify({note:txt}) });
-    await loadState(); toast('Sent to Braca. He will fix it and it comes back here.'); }
+  try { const r = await api('/fr/posts/'+id+'/reject', { method:'POST', body: JSON.stringify({note:txt}) });
+    applyPost(r.post); toast('Sent to Braca. He will fix it and it comes back here.'); }
   catch(e){ toast('Failed: '+e.message); }
 }
 
@@ -817,8 +866,8 @@ async function saveModal(){
   const date = document.getElementById('m-date').value || p.date;
   const time = document.getElementById('m-time').value || p.time;
   try {
-    await api('/fr/posts/'+p.id, { method:'PATCH', body: JSON.stringify({caption, date, time}) });
-    closeModal(); await loadState();
+    const r = await api('/fr/posts/'+p.id, { method:'PATCH', body: JSON.stringify({caption, date, time}) });
+    closeModal(); applyPost(r.post);
     toast(`Saved. Goes out ${fmtDate(date)} · ${time}`);
   } catch(e){ toast('Save failed: '+e.message); }
 }
@@ -830,19 +879,6 @@ function rejectFromModal(){
     if(el) el.scrollIntoView({behavior:'smooth',block:'center'});
     toggleReason(p.id);
   });
-}
-async function modalFile(inp){
-  const p=posts.find(x=>x.id===modalId); const file=inp.files[0];
-  if(!p||!file) return;
-  inp.value='';
-  toast('Uploading…');
-  try {
-    const up = await uploadFile(file);
-    await api('/fr/posts/'+p.id, { method:'PATCH', body: JSON.stringify({mediaKeys:[up.key], mediaKind:up.kind}) });
-    await loadState();
-    const np = posts.find(x=>x.id===p.id); if(np) openModal(np.id);
-    toast('New visual attached');
-  } catch(e){ toast('Upload failed: '+e.message); }
 }
 document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeModal(); });
 
