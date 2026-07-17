@@ -502,7 +502,7 @@ function liMediaBlock(p, editable){
       ? `<video src="${p.img}" playsinline preload="metadata"></video><button type="button" class="li-play" onclick="playVideo(this)" aria-label="Play video"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></button>`
       : `<img src="${p.img}" alt="">`;
     const ctl = editable ? `<div class="media-ctl">
-        <button type="button" class="mc dl" onclick="downloadMedia('${p.img}')"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>Download</button>
+        <button type="button" class="mc dl" onclick="downloadMedia('${p.id}')"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>Download</button>
         <button type="button" class="mc rm" onclick="removeMedia('${p.id}')"><svg viewBox="0 0 24 24"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m1 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/></svg>Remove</button>
       </div>` : '';
     return `<div class="li-media">${media}${ctl}</div>`;
@@ -519,11 +519,17 @@ function playVideo(btn){
 }
 // ---- media controls (download / remove / add) ----
 let mediaTargetId = null;
-async function downloadMedia(url){
+async function downloadMedia(id){
+  const p = posts.find(x=>x.id===id); if(!p || !p.img) return;
+  const url = p.img;
+  // foundername-linkedin-post-timescheduled, e.g. trevor-linkedin-post-2026-07-29-0900.png
+  const ext = ((url.split('/').pop()||'').split('?')[0].split('.').pop()||'').toLowerCase();
+  const name = `${p.f}-linkedin-post-${p.date||'undated'}-${(p.time||'').replace(':','')}`.replace(/-$/,'')
+    + (ext && ext.length<=4 ? '.'+ext : '');
   try {
     const r = await fetch(url); const b = await r.blob();
     const a = document.createElement('a'); a.href = URL.createObjectURL(b);
-    a.download = (url.split('/').pop() || 'motionops-media').split('?')[0];
+    a.download = name;
     document.body.appendChild(a); a.click(); a.remove();
     setTimeout(()=>URL.revokeObjectURL(a.href), 2000);
   } catch(e){ window.open(url, '_blank'); }
