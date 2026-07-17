@@ -182,6 +182,9 @@
   textarea.li-text:focus{outline:none;background:#fff;box-shadow:0 0 0 2px var(--green-soft),0 0 0 1px var(--green) inset}
   .li-media{width:100%;background:#000;border-top:1px solid #edf0f2;position:relative;display:flex;justify-content:center}
   .li-media img,.li-media video{width:100%;height:auto;display:block;object-fit:contain}
+  .li-play{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:60px;height:60px;border-radius:50%;background:rgba(13,27,46,.62);border:0;display:grid;place-items:center;cursor:pointer;z-index:3;transition:background .15s,transform .1s}
+  .li-play:hover{background:rgba(13,27,46,.82);transform:translate(-50%,-50%) scale(1.05)}
+  .li-play svg{width:26px;height:26px;fill:#fff;margin-left:3px}
   .li-media .ph{height:220px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:#8a97a6;font-family:'Inter',sans-serif;font-size:12.5px;font-weight:600;width:100%}
   .li-media .ph svg{width:34px;height:34px;stroke:#b6c0cc;fill:none;stroke-width:1.5}
   /* LinkedIn bottom action bar (compact, matches real mobile layout) */
@@ -347,7 +350,7 @@
 
   <div id="view-stats" class="stats" hidden></div>
 </div>
-<input type="file" id="np-file" accept="image/*" hidden onchange="npFile(this)">
+<input type="file" id="np-file" accept="image/*,video/*" hidden onchange="npFile(this)">
 
 <!-- calendar post modal -->
 <div class="scrim" id="scrim" onclick="if(event.target===this)closeModal()">
@@ -360,7 +363,7 @@
     <div class="m-body" id="m-body"></div>
   </div>
 </div>
-<input type="file" id="m-file" accept="image/*" hidden onchange="modalFile(this)">
+<input type="file" id="m-file" accept="image/*,video/*" hidden onchange="modalFile(this)">
 
 <!-- native confirm dialog -->
 <div class="cf-scrim" id="cf-scrim" onclick="if(event.target===this)cfResolve(false)">
@@ -472,9 +475,21 @@ function liWhenLabel(p){
 }
 function liMediaBlock(p, replace){
   const rep = replace ? `<button class="li-replace" onclick="document.getElementById('m-file').click()"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>Replace</button>` : '';
-  if(p.img) return `<div class="li-media">${rep}${p.vid ? `<video src="${p.img}" muted playsinline preload="metadata"></video>` : `<img src="${p.img}" alt="">`}</div>`;
+  if(p.img) {
+    const media = p.vid
+      ? `<video src="${p.img}" playsinline preload="metadata"></video><button type="button" class="li-play" onclick="playVideo(this)" aria-label="Play video"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></button>`
+      : `<img src="${p.img}" alt="">`;
+    return `<div class="li-media">${rep}${media}</div>`;
+  }
   if(replace) return `<div class="li-media"><div class="ph"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="2"/><path d="M3 17l6-5 5 4 3-2 4 3"/></svg><span>No visual yet. Click Replace to add one.</span></div>${rep}</div>`;
   return '';
+}
+function playVideo(btn){
+  const v = btn.parentElement.querySelector('video');
+  if(!v) return;
+  v.controls = true; v.muted = false;
+  const pr = v.play(); if(pr && pr.catch) pr.catch(()=>{});
+  btn.remove();
 }
 // p: {f, cap, img, vid, status, date, time}; opts: {edit, capId, capOnChange, replace}
 function liPreview(p, opts){
@@ -615,6 +630,7 @@ function keepDraft(){ const el = document.getElementById('np-cap'); if(el) npDra
 function npFile(inp){
   const file = inp.files[0]; if(!file) return;
   keepDraft();
+  npMediaKind = file.type.startsWith('video') ? 'video' : 'image'; // so the preview knows immediately
   const up = document.getElementById('np-up');
   const r = new FileReader(); r.onload = ()=>{ npImg = r.result; refreshPreview(); }; r.readAsDataURL(file);
   if(up) up.innerHTML = '<span>Uploading…</span>';
